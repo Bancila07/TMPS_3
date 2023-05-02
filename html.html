@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista activităților</title>
+</head>
+<body>
+<h1>Lista activităților</h1>
+<form id="add-activity-form">
+  <label for="activity-name-input">Nume activitate:</label>
+  <input type="text" id="activity-name-input" name="activity-name-input">
+  <button type="submit">Adaugă activitate</button>
+</form>
+<button id="run-activities-button">Rulează activitățile</button>
+<ul id="activity-list"></ul>
+<script>
+  // Implementarea pattern-urilor Structural Design
+  class Activity {
+    constructor(name) {
+      this.name = name;
+      this.isCompleted = false;
+    }
+    complete() {
+      this.isCompleted = true;
+    }
+  }
+
+  class ActivityProxy {
+    constructor(activity) {
+      this.activity = activity;
+    }
+    complete() {
+      if (!this.activity.isCompleted) {
+        this.activity.complete();
+        console.log(`Activitatea "${this.activity.name}" a fost marcată ca finalizată.`);
+      }
+    }
+  }
+
+  class ActivityDecorator {
+    constructor(activity) {
+      this.activity = activity;
+    }
+    complete() {
+      this.activity.complete();
+      console.log(`Activitatea "${this.activity.name}" a fost marcată ca finalizată.`);
+    }
+  }
+
+  class ActivityGroup {
+    constructor(activities) {
+      this.activities = activities;
+    }
+    complete() {
+      for (const activity of this.activities) {
+        activity.complete();
+      }
+      console.log(`Grupul de activități "${this.activities.map(activity => activity.name).join(", ")}" a fost marcat ca finalizat.`);
+    }
+  }
+
+  class ActivityAppFacade {
+    constructor() {
+      this.activities = [];
+    }
+    addActivity(activity) {
+      const activityProxy = new ActivityProxy(activity);
+      const decoratedActivity = new ActivityDecorator(activityProxy);
+      this.activities.push(decoratedActivity);
+    }
+    run() {
+      const activityGroup = new ActivityGroup(this.activities);
+      activityGroup.complete();
+    }
+  }
+
+  // Creează o instanță a aplicației
+  const app = new ActivityAppFacade();
+
+  // Funcție de adăugare a unei activități noi
+  function addActivity(event) {
+    event.preventDefault();
+    const activityName = document.getElementById("activity-name-input").value;
+    const activity = new Activity(activityName);
+    app.addActivity(activity);
+    displayActivity(activity);
+    document.getElementById("activity-name-input").value = "";
+  }
+
+  // Funcție de afișare a unei activități în listă
+  function displayActivity(activity) {
+    const activityList = document.getElementById("activity-list");
+    const activityItem = document.createElement("li");
+    activityItem.textContent = activity.name;
+    activityList.appendChild(activityItem);
+  }
+
+  // Funcție de rulare a activităților
+  function runActivities() {
+    try {
+      app.run();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  // Atașează funcția de adăugare la formular
+  const addActivityForm = document.getElementById("add-activity-form");
+  addActivityForm.addEventListener("submit", addActivity);
+
+  // Atașează funcția de rulare la buton
+  const runActivitiesButton = document.getElementById("run-activities-button");
+  runActivitiesButton.addEventListener("click", runActivities);
+
+</script>
+</body>
+</html>
